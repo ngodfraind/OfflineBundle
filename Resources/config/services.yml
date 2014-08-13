@@ -7,7 +7,6 @@ parameters:
     claroline.synchronisation.frag_size: 524288
     claroline.synchronisation.offline_config: "%kernel.root_dir%/config/sync_config.yml"
 
-
 services:
     claroline_offline.creation_manager:
         class: %claroline.manager.creation_manager.class%

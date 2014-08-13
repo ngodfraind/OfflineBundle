@@ -36,7 +36,8 @@ class FirstConnectionListener
      *     "securityContext" = @DI\Inject("security.context"),
      *     "eventDispatcher" = @DI\Inject("claroline.event.event_dispatcher"),
      *     "router"          = @DI\Inject("router"),
-     *     "plateformConf"   = @DI\Inject("%claroline.synchronisation.offline_config%")
+     *     "plateformConf"   = @DI\Inject("%claroline.synchronisation.offline_config%"),
+     *     "env"             = @DI\Inject("%kernel.environment%")
      * })
      *
      */
@@ -44,13 +45,15 @@ class FirstConnectionListener
         SecurityContextInterface $securityContext,
         StrictDispatcher $eventDispatcher,
         Router $router,
-        $plateformConf
+        $plateformConf,
+        $env
     )
     {
         $this->securityContext = $securityContext;
         $this->eventDispatcher = $eventDispatcher;
         $this->router = $router;
         $this->plateformConf = $plateformConf;
+        $this->env = $env;
     }
 
     /**
@@ -76,7 +79,7 @@ class FirstConnectionListener
         $token = $this->securityContext->getToken();
         $url = $event->getRequest()->getUri();
 
-        if ((strpos($url, 'localhost') == false) && (strpos($url, '::1') == false) && (strpos($url, '127.0.0.1') == false)) {
+        if ($this->env !== 'offline') {
             // If online.
             return $event;
         }

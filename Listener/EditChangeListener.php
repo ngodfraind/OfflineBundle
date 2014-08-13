@@ -45,7 +45,7 @@ class EditChangeListener
 
     /**
      * @DI\InjectParams({
-     *     "container"      = @DI\Inject("service_container"),
+     *     "container"       = @DI\Inject("service_container"),
      *     "eventDispatcher" = @DI\Inject("claroline.event.event_dispatcher")
      * })
      *
@@ -66,8 +66,7 @@ class EditChangeListener
     }
 	
 	/**
-     *   @DI\Observe("onFlush")
-	 *
+     * @DI\Observe("onFlush")
      */
 	public function onFlush(OnFlushEventArgs $eventArgs)
 	{
@@ -76,29 +75,33 @@ class EditChangeListener
 		$env = $this->container->getParameter("kernel.environment");
 		$securityContext = $this->container->get("security.context");
 		$types = array_keys($this->offline);
-		$user = $securityContext->getToken()->getUser();
 
-        foreach ($uow->getScheduledEntityUpdates() AS $entity) {
-			if($entity instanceof AbstractResource){	
-				$resNode = $entity->getResourceNode();
-				$nodeType = $resNode->getResourceType()->getName();	
-				
-				if($env == 'offline' && $user->getId != $resNode->getCreator()){
-					if(in_array($nodeType, $types)){
-						$this->offline[$nodeType]->modifyUniqueId($resNode, $em, $uow);	
-					}
-				}
-			}
-			if($entity instanceof ResourceNode){
-				$nodeType = $entity->getResourceType()->getName();	
-				
-				if($env == 'offline' && $user->getId != $resNode->getCreator()){
-					if(in_array($nodeType, $types)){
-						$this->offline[$nodeType]->modifyUniqueId($entity, $em, $uow);	
-					}
-				}
-			}
+        //if cli, we don't want to save changes (helpfull for installation)
+        if (php_sapi_name() !== 'cli') {
+            $user = $securityContext->getToken()->getUser();
+
+            foreach ($uow->getScheduledEntityUpdates() AS $entity) {
+                if ($entity instanceof AbstractResource) {
+                    $resNode = $entity->getResourceNode();
+                    $nodeType = $resNode->getResourceType()->getName();
+
+                    if ($env === 'offline' && $user->getId != $resNode->getCreator()) {
+                        if(in_array($nodeType, $types)){
+                            $this->offline[$nodeType]->modifyUniqueId($resNode, $em, $uow);
+                        }
+                    }
+                }
+
+                if ($entity instanceof ResourceNode) {
+                    $nodeType = $entity->getResourceType()->getName();
+
+                    if ($env === 'offline' && $user->getId != $resNode->getCreator()) {
+                        if (in_array($nodeType, $types)) {
+                            $this->offline[$nodeType]->modifyUniqueId($entity, $em, $uow);
+                        }
+                    }
+                }
+            }
         }
-
 	}
 }

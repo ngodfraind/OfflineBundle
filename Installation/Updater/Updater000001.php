@@ -4,7 +4,6 @@ namespace Claroline\OfflineBundle\Installation\Updater;
 
 class Updater000001
 {
-
     private $container;
     private $logger;
 
